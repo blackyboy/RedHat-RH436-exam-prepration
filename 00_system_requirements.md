@@ -101,12 +101,52 @@ iface br0 inet static
 	post-up route add -net 172.19.0.0 netmask 255.255.255.0 gw 192.168.0.254
 ```
 
-
 Restart the network using 
 
 
 ```
 # sudo ifdown eth0 && sudo ifup eth0
+```
+
+Physical Machine Route:
+----------------------
+
+```
+route add default gw 192.168.0.254
+route add -net 172.16.0.0 netmask 255.255.255.0 gw 192.168.0.254
+```
+
+Virtual Machine Routes:
+-----------------------
+
+```
+route add -net 192.168.0.0 netmask 255.255.255.0 dev eth0
+route add default gw 192.168.0.254
+```
+
+Persitent for Route in VMs:
+-----------------------
+
+```
+172.16.0.1 dev eth0
+default via 172.16.0.1 dev eth0
+```
+
+In below file
+
+```
+/etc/sysconfig/network-scripts/route-eth0 
+```
+
+Kickstart Entry for VM:
+----------------------
+
+```
+%post
+route add -net 192.168.0.0 netmask 255.255.255.0 dev eth0
+route add default gw 192.168.0.254
+echo "172.16.0.1 dev eth0
+      default via 172.16.0.1 dev eth0" >> /etc/sysconfig/network-scripts/route-eth0 
 ```
 
 ---------------------------------------------------------
