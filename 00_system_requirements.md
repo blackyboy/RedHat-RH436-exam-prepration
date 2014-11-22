@@ -20,7 +20,7 @@
 * KVM installed in Instructor machine, With Bridge.
 * KVM holds 4 VMs which need for me to prepare for RH436.
 * Instructor machine Supply local Yum repo (Centos6.5).
-* 1 VM installed and configured with Ubuntu DNS Server for name resolving with 192.168.0.200.
+* 1 VM installed with Ubuntu 14.04 and configured with DNS Server for name resolving with  IP 192.168.0.200.
 
 ---------------------------------------------------------
 
@@ -74,7 +74,7 @@ From /dev/sda5 to /dev/sda10 assigned for VMs.
 
 
 * Router IP changed to 192.168.0.1
-* Add all VMs ip to route from instructor machine (192.168.0.254)
+* Add all network to to route from instructor machine (192.168.0.254)
 
 ```
 auto lo
