@@ -6,10 +6,10 @@
 
 #### Virtual Machines:
 
-2. node2.public.cluster1.example.com	172.16.1.0
-3. node1.private.cluster1.example.com	172.17.1.0
-4. node3.storage1.cluster1.example.com	172.18.1.0
-5. node4.storage2.cluster1.example.com	172.19.1.0
+2. node2.public.cluster1.example.com	172.16.0.1
+3. node1.private.cluster1.example.com	172.17.0.1
+4. node3.storage1.cluster1.example.com	172.18.0.1
+5. node4.storage2.cluster1.example.com	172.19.0.1
 
 ---------------------------------------------------------
 
@@ -18,9 +18,9 @@
 * Physcial machine with i5 Processor, 32GB RAM, /root with 40GB space.
 * Instructor machine (Physical Host) installed with Linux mint Qiana 17.
 * KVM installed in Instructor machine, With Bridge.
-* KVM holds 4 VM's which need for me to prepare for RH436.
+* KVM holds 4 VMs which need for me to prepare for RH436.
 * Instructor machine Supply local Yum repo (Centos6.5).
-* 1 VM installed and configured with Ubuntu DNS Server for name resolving.
+* 1 VM installed and configured with Ubuntu DNS Server for name resolving with 192.168.0.200.
 
 ---------------------------------------------------------
 
@@ -50,4 +50,64 @@ sda       8:0    0 298.1G  0 disk
 └─sda17 259:1    0   5.2G  0 part
 ```
 
+From /dev/sda5 to /dev/sda10 assigned for VMs.
+
+---------------------------------------------------------
+
+#### Installing KVM.
+
+```
+# grep -Ec '(vmx|svm|lm)' /proc/cpuinfo
+
+# grep -E --color=always '(vmx|svm|lm)' /proc/cpuinfo
+
+# sudo apt get update && sudo apt-get upgrade -y 
+
+# sudo apt-get install virt-manager -y
+
+# sudo apt-get install qemu-kvm libvirt-bin ubuntu-vm-builder bridge-utils -y
+
+# virt-manager
+```
+
+---------------------------------------------------------
+
+#### Network setup.
+
+
+* Router IP changed to 192.168.0.1
+* Add all VMs ip to route from instructor machine (192.168.0.254)
+
+```
+auto lo
+iface lo inet loopback
+
+auto eth0
+iface eth0 inet manual
+
+auto br0
+iface br0 inet static
+        address 192.168.0.254
+	netmask 255.255.255.0
+        network 192.168.0.0
+	gateway 192.168.0.1
+        broadcast 192.168.0.255
+	dns-nameservers 192.168.0.100 192.168.0.200 192.168.0.1 8.8.8.8 8.8.4.4
+        bridge_ports eth0
+        bridge_stp off
+        bridge_fd 0
+        bridge_maxwait 0
+	post-up route add -net 172.16.0.0 netmask 255.255.255.0 gw 192.168.0.254
+	post-up route add -net 172.17.0.0 netmask 255.255.255.0 gw 192.168.0.254
+	post-up route add -net 172.18.0.0 netmask 255.255.255.0 gw 192.168.0.254
+	post-up route add -net 172.19.0.0 netmask 255.255.255.0 gw 192.168.0.254
+```
+
+
+Restart the network using 
+
+
+```
+# sudo ifdown eth0 && sudo ifup eth0
+```
 
