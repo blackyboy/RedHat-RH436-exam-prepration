@@ -109,3 +109,87 @@ Restart the network using
 # sudo ifdown eth0 && sudo ifup eth0
 ```
 
+---------------------------------------------------------
+
+#### Yum repo setup.
+
+
+* First copy the ISO files of RHEL6, RHEL7, Centos6, Centos7, Ubuntu-14 to /tmp and rename as centos65.iso, centos70.iso, rhel70.iso, ubuntu1404.iso
+* Create a script using below command and run it to automate.
+
+
+```
+sudo mkdir -p /var/www/html/pub/rhel6
+
+sudo mkdir -p /var/www/html/pub/rhel7
+
+sudo mkdir -p /var/www/html/pub/centos6
+
+sudo mkdir -p /var/www/html/pub/centos7
+
+sudo mkdir -p /var/www/html/pub/ubuntu14
+
+ls -l /var/www/html/pub/
+
+sudo setfacl -m u:babinlonston:rwx /var/www
+
+sudo service vsftpd restart
+
+sudo service apache2 restart
+
+sudo cp /tmp/rhel-ks.cfg /var/www/html/pub/
+
+sudo chmod 644 /var/www/html/pub/rhel-ks.cfg
+
+sudo cp /tmp/centos-ks.cfg /var/www/html/pub/
+
+sudo chmod 644 /var/www/html/pub/centos-ks.cfg
+
+sleep 1
+ 
+sudo mount -t iso9660 -o loop /tmp/centos65.iso /mnt/
+
+sleep 2
+
+sudo cp -rav /mnt/* /var/www/html/pub/centos6/
+
+sleep 2
+
+sudo umount /mnt/
+
+sleep 2
+
+sudo mount -t iso9660 -o loop /tmp/centos70.iso /mnt/
+
+sleep 2
+
+sudo cp -rav /mnt/* /var/www/html/pub/centos7/
+
+sleep 2
+
+sudo umount /mnt
+
+sleep 2
+
+sudo mount -t iso9660 -o loop /tmp/rhel70.iso /mnt/
+
+sleep 2
+
+sudo cp -avr /mnt/* /var/www/html/pub/rhel7/
+
+sleep 2
+
+sudo umount /mnt
+
+sleep 2
+
+sudo mount -t iso9660 -o loop /tmp/ubuntu1404.iso /mnt/
+
+sleep 2
+
+sudo cp -avr /mnt/* /var/www/html/pub/ubuntu14/
+
+sleep 2
+
+sudo umount /mnt
+```
