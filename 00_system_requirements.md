@@ -57,8 +57,6 @@ From /dev/sda5 to /dev/sda10 assigned for VMs.
 #### Installing KVM.
 
 ```
-# grep -Ec '(vmx|svm|lm)' /proc/cpuinfo
-
 # grep -E --color=always '(vmx|svm|lm)' /proc/cpuinfo
 
 # sudo apt get update && sudo apt-get upgrade -y 
