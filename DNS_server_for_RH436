@@ -1,0 +1,290 @@
+#### DNS server Setup:
+
+* DNS server setup using Ubuntu 14.04 for RH436.
+
+```
+# sudo apt-get update && sudo apt-get upgrade -y
+
+# sudo apt-get install bind9 dnsutils -y
+
+# cd /etc/bind/ && ls -l
+```
+
+Forwaders:
+----------
+Edit the named.conf to define forwaders
+
+```
+# sudo vim named.conf.options
+```
+
+change the forwaders
+
+```
+forwarders {
+        192.168.0.1;
+        };
+```
+
+Restart the service and dig using localhost
+
+
+```
+# sudo /etc/init.d/bind9 start
+
+# dig @127.0.0.1 google.com
+```
+
+Edit the name.conf.local to define database file.
+
+
+```
+# sudo vim /etc/bind/named.conf.local
+```
+
+Append the below zone file location
+
+
+```
+zone "example.com" {
+        type master;
+        file "/etc/bind/db.example.com";
+        };
+```
+
+Make a copy of db file from template
+
+
+```
+# sudo cp db.local db.example.com
+
+# sudo vim db.example.com
+```
+
+* Append the content to Zone database file
+
+```
+;
+; BIND data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     example.com. root.db.example.com. (
+                     2014112301         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      ns.example.com.
+ns      IN      A       192.168.0.200
+
+node2.public.cluster1     IN      A       172.16.0.1
+node1.private.cluster1    IN      A       172.17.0.1
+node3.storage1.cluster1   IN      A       172.18.0.1
+node4.storage2.cluster1	  IN	  A	  172.19.0.1
+```
+
+Restart the service 
+
+
+```
+# sudo service bind9 restart
+
+# dig @127.0.0.1 node2.public.cluster1.example.com
+```
+
+Edit the network settings
+
+``
+# sudo vim /etc/network/interfaces
+
+auto lo
+iface lo inet loopback
+auto eth0
+iface eth0 inet static
+        address 192.168.0.200
+        netmask 255.255.255.0
+        gateway 192.168.0.1
+        network 192.168.0.0
+        broadcast 192.168.0.255
+        dns-nameservers 127.0.0.1
+	dns-search example.com
+	post-up route add -net 172.16.0.0 netmask 255.255.255.0 gw 192.168.0.254
+	post-up route add -net 172.17.0.0 netmask 255.255.255.0 gw 192.168.0.254
+        post-up route add -net 172.18.0.0 netmask 255.255.255.0 gw 192.168.0.254
+        post-up route add -net 172.19.0.0 netmask 255.255.255.0 gw 192.168.0.254
+```
+
+* Restart using
+
+```
+# sudo ifdown eth0 && sudo ifup eth0
+```
+
+Reserve Lookup:
+--------------
+
+* Define reserve lookup for each network.
+
+```
+# sudo vim /etc/bind/named.conf.local
+```
+
+Append the db file localtion
+
+```
+zone "0.16.172.in-addr.arpa" {
+        type master;
+        notify no;
+        file "/etc/bind/db.example.com192";
+        };
+
+zone "0.17.172.in-addr.arpa" {
+        type master;
+        notify no;
+        file "/etc/bind/db.example.com192-1";
+        };
+
+zone "0.18.172.in-addr.arpa" {
+        type master;
+        notify no;
+        file "/etc/bind/db.example.com192-2";
+        };
+
+zone "0.19.172.in-addr.arpa" {
+        type master;
+        notify no;
+        file "/etc/bind/db.example.com192-3";
+        };
+```
+
+Make a copy of template and create files.
+
+
+``
+# sudo cp db.127 db.example.com192
+# sudo cp db.127 db.example.com192-1
+# sudo cp db.127 db.example.com192-2
+# sudo cp db.127 db.example.com192-3
+```
+
+Edit the file 
+
+```
+# sudo vim db.example.com192
+```
+
+Changes as per our RH436 Host needed name resolved.
+
+
+```
+;
+; BIND reverse data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     ns.example.com. root.example.com. (
+                        20140112302      ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      ns.
+100     IN      PTR     ns.example.com.
+
+1     	IN      PTR     node2.public.cluster1.example.com.
+```
+
+Edit 
+
+```
+# sudo vim db.example.com192-1
+```
+
+Append
+
+
+```
+;
+; BIND reverse data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     ns.example.com. root.example.com. (
+                        2014112302      ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      ns.
+100     IN      PTR     ns.example.com.
+
+1       IN      PTR     node1.private.cluster1.example.com.
+
+```
+
+Edit
+
+```
+# sudo vim db.example.com192-2
+```
+
+Append 
+
+```
+;
+; BIND reverse data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     ns.example.com. root.example.com. (
+                        2014112302      ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      ns.
+100     IN      PTR     ns.example.com.
+
+1       IN      PTR     node3.storage1.cluster1.example.com.
+```
+
+Edit
+
+
+```
+# sudo vim db.example.com192-3
+```
+
+Append 
+
+
+```
+;
+; BIND reverse data file for local loopback interface
+;
+$TTL    604800
+@       IN      SOA     ns.example.com. root.example.com. (
+                        2014112302      ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                         604800 )       ; Negative Cache TTL
+;
+@       IN      NS      ns.
+100     IN      PTR     ns.example.com.
+
+1       IN      PTR     node4.storage2.cluster1.example.com.
+```
+
+
+Check:
+
+
+```
+# host 172.16.0.1
+# dig node2.public.cluster1.example.com
+```
+---------------------------
+
+
