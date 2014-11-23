@@ -8,4 +8,6 @@ This repository created to store my RH436-Exam-Preparation
 
 [VMs Kick Start file](https://github.com/blackyboy/RH436/tree/master/kick-start-files)
 
-[DNS setup for RH436]()
+[DNS setup for RH436](https://github.com/blackyboy/RH436/blob/master/DNS_server_for_RH436)
+
+[DNS Databases](https://github.com/blackyboy/RH436/tree/master/dns-db)
